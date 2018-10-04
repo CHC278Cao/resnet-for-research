@@ -7,7 +7,7 @@
 from resnetUtils import *
 
 class Resnet(object):
-    def __init__(self, inputs, num_classes, imgsize, is_training, ):
+    def __init__(self, inputs, num_classes, imgsize, is_training):
         self.inputs = tf.reshape(inputs, [-1, imgsize, imgsize, 1])
         self.num_classes = num_classes
         self.is_training = is_training
