@@ -12,10 +12,19 @@ from hyper_parameters import *
 
 class BatchIt(object):
     def __init__(self, img, label, imgsize, batch_size):
+        """
+            Create the mini-batch for training
+        Args:
+            img: image data, grayscale
+            label: label data
+            imgsize: image height or width
+            batch_size: mini-batch size
+        """
         self.img = img
         self.label = label
         self.imgsize = imgsize
-       
+        self.batch_size = batch_size
+        
         self.index_in_epoch = 0
         self.batch_img, self.batch_label = self.next_batch()
 
@@ -41,6 +50,7 @@ class BatchIt(object):
         return img, label
 
     def transform(self, img, label, rate = 0.5):
+        # randomly flip image left to right
         img = img.reshape(-1, self.imgsize, self.imgsize)
         num = img.shape[0]
         indice = np.random.choice(num, int(num * rate), replace = False)
@@ -49,6 +59,7 @@ class BatchIt(object):
         return img, label
     
     def add_noise(self, img, label, rate = 0.5, sigma = 0.1):
+        # add Guassian noise to the images
         img = img.reshape(-1, self.imgsize, self.imgsize)
         temp_img = np.float64(np.copy(img))
         batch = temp_img.shape[0]
