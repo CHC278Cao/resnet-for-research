@@ -25,10 +25,13 @@ class BatchIt(object):
         self.imgsize = imgsize
         self.batch_size = batch_size
         
-        self.index_in_epoch = 0
+        #self.index_in_epoch = 0
         self.batch_img, self.batch_label = self.next_batch()
 
-        
+   
+"""  
+    # not using this function, cause the first shuffle change the order of original data
+    # then in the second shuffle, it will throw a memoryeror
     def next_batch(self):
         num_samples = self.img.shape[0]
         start = self.index_in_epoch
@@ -43,6 +46,22 @@ class BatchIt(object):
             assert self.index_in_epoch <= num_sampels
         end = self.index_in_epoch
         img, label = self.img[start: end], self.label[start: end]
+        if FLAGS.flip_images:
+            img, label = self.transform(img, label)
+        if FLAGS.noises_adding:
+            img, label = self.add_noise(img, label)
+        return img, label
+"""
+
+    def next_batch(self):
+        num_samples = self.img.shape[0]
+        start_in_range = math.floor(num_samples / self.batch_size)
+        
+        start = int(np.random.randint(low = 0, high = start_in_epcoh+1, size = 1))
+        step = int(np.random.randint(low = 0, high = start_in_epcoh+1, size = 1))
+        img = self.img[start: start+step*(self.batch_size-1)+1: step, :]
+        label = self.label[start: start+step*(self.batch_size-1)+1: step, :]
+        
         if FLAGS.flip_images:
             img, label = self.transform(img, label)
         if FLAGS.noises_adding:
