@@ -12,7 +12,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
 from datetime import datetime
 
-from modelv2 import Model
+from resnet import Resnet as Model
 from DataUtils import *
 from BatchTest import BatchTest
 
@@ -53,7 +53,6 @@ batch_size = 128
 num_iterations = 30000
 num_classes = 2
 num_samples = train_img.shape[0]
-num_test = valid_img.shape[0]
 size_input = train_img.shape[1]
 imgsize = 129
 decay_steps = 1000
@@ -63,7 +62,7 @@ csv_steps = 5000
 # Iterator for mini-batch
 trainimage = tf.placeholder(train_img.dtype, train_img.shape)
 trainlabel = tf.placeholder(train_label.dtype, train_label.shape)
-train_dataset = tf.data.Dataset.from_tensor_slices((trainimage, trainlabel)).shuffle(buffer_size = 25000).batch(batch_size).repeat(20)
+train_dataset = tf.data.Dataset.from_tensor_slices((trainimage, trainlabel)).shuffle(buffer_size = 30000).batch(batch_size).repeat(20)
 train_iter = train_dataset.make_initializable_iterator()
 train_img_batch, train_lab_batch = train_iter.get_next()
 
@@ -73,7 +72,6 @@ valid_dataset = tf.data.Dataset.from_tensor_slices((validimage, validlabel)).shu
 valid_iter = valid_dataset.make_initializable_iterator()
 valid_img_batch, valid_lab_batch = valid_iter.get_next()
 
-test = BatchTest(test_img, test_label, batch_size)
 # model
 x = tf.placeholder(tf.float32, [None, size_input])
 y = tf.placeholder(tf.float32, [None, num_classes])
@@ -94,8 +92,10 @@ with tf.name_scope("Loss"):
 with tf.name_scope("Optimizer"):
     global_step = tf.Variable(0, trainable = False)
     learn_rate = tf.train.exponential_decay(init_learning_rate, global_step, decay_steps, 0.96, staircase = True)
-    momentum = tf.train.exponential_decay(init_momentum, global_step, 1000, 0.9, staircase = False)
-    optimizer = tf.train.MomentumOptimizer(learning_rate = learn_rate, momentum = momentum).minimize(loss, global_step = global_step)
+    momentum = tf.train.exponential_decay(init_momentum, global_step, 1000, 0.9, staircase = True)
+    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    with tf.control_dependencies(update_ops):
+        optimizer = tf.train.MomentumOptimizer(learning_rate = learn_rate, momentum = momentum).minimize(loss, global_step = global_step)
 
 with tf.name_scope("Accuracy"):
     correct_pred = tf.equal(tf.argmax(out, 1), tf.argmax(y, 1))
