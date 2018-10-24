@@ -17,7 +17,7 @@ def create_conv_variables(name, shape, init = tf.contrib.layers.xavier_initializ
         shape: weight tensor shape
         init: weight initializd method, using xavier initializer by default
     """
-    regularizer = tf.contrib.layers.l2_regularizer(scalar = FLAGS.weight_decay)
+    regularizer = tf.contrib.layers.l2_regularizer(scale = FLAGS.weight_decay)
     var = tf.get_variable(name, shape = shape, initializer = init, regularizer = regularizer)   
     return var
 
@@ -29,8 +29,8 @@ def create_fc_variables(name, shape, init = tf.truncated_normal_initializer(0.0,
         shape: weight tensor shape
         init: weight initializd method, using truncated normal initializer by default
     """
-    regularizer = tf.contrib.layers.l2_regularizer(scalar = FLAGS.weight_dacay)
-    var = tf.get_variables(name, shape = shape, initializer = init, regularizer = regularizer)
+    regularizer = tf.contrib.layers.l2_regularizer(scale = FLAGS.weight_dacay)
+    var = tf.get_variable(name, shape = shape, initializer = init, regularizer = regularizer)
     return var
 
 def create_bias_variables(name, shape, init = tf.constant_initializer(0.0)):
@@ -41,7 +41,7 @@ def create_bias_variables(name, shape, init = tf.constant_initializer(0.0)):
         shape: bias tensor shape
         init: bias initializd method, using constant initializer by default
     """
-    var = tf.get_variables(name, shape = shape, initializer = init)
+    var = tf.get_variable(name, shape = shape, initializer = init)
     return var
 
 def conv2d(inputs, w, b, stride, padding = "VALID"):
@@ -158,19 +158,19 @@ def block_v1(inputs, out_dim_bn1, out_dim_bn2, out_dim_bn3, is_training):
     """
     in_dim = inputs.get_shape().as_list()[-1]
     with tf.variable_scope("Branch_1"):
-        out1 = conv_bn_relu_layer(inputs, out_dim_bn1, kernel = 1, stride = 1, padding = "VALID", is_training = is_training)
+        out1 = conv_bn_relu_layer(inputs, out_dim_bn1, kernel = 1, stride = 1, padding = "SAME", is_training = is_training)
     with tf.variable_scope("Branch_2"):
         out2 = conv_bn_relu_layer(out1, out_dim_bn2, kernel = 3, stride = 1, padding = "SAME", is_training = is_training)
     with tf.variable_scope("Branch_3"):
         w = create_conv_variables(name = "weights", shape = [1, 1, out_dim_bn2, out_dim_bn3])
         b = create_bias_variables(name = "baises", shape = [out_dim_bn3]) 
-        conv3 = conv2d(out2, w, b, stride = 1, padding = "VALID", is_training = is_training)
-        bn3 = batch_normalization(conv3)
+        conv3 = conv2d(out2, w, b, stride = 1, padding = "SAME")
+        bn3 = batch_normalization(conv3, is_training = is_training)
     with tf.variable_scope("Branch_4"):
         w = create_conv_variables(name = "weights", shape = [1, 1, in_dim, out_dim_bn3])
         b = create_bias_variables(name = "baises", shape = [out_dim_bn3]) 
-        conv4 = conv2d(inputs, w, b, stride = 1, padding = "VALID", is_training = is_training)
-        bn4 = batch_normalization(conv4)
+        conv4 = conv2d(inputs, w, b, stride = 1, padding = "SAME")
+        bn4 = batch_normalization(conv4, is_training = is_training)
     out = bn4 + bn3
     out = tf.nn.relu(out)
     
@@ -189,14 +189,14 @@ def resdual_v1(inputs, out_dim_bn1, out_dim_bn2, out_dim_bn3, is_training):
     """
     in_dim = inputs.get_shape().as_list()[-1]
     with tf.variable_scope("Branch_1"):
-        out1 = conv_bn_relu_layer(inputs, out_dim_bn1, kernel = 1, stride = 1, padding = "VALID", is_training = is_training)
+        out1 = conv_bn_relu_layer(inputs, out_dim_bn1, kernel = 1, stride = 1, padding = "SAME", is_training = is_training)
     with tf.variable_scope("Branch_2"):
         out2 = conv_bn_relu_layer(out1, out_dim_bn2, kernel = 3, stride = 1, padding = "SAME", is_training = is_training)
     with tf.variable_scope("Branch_3"):
         w = create_conv_variables(name = "weights", shape = [1, 1, out_dim_bn2, out_dim_bn3])
         b = create_bias_variables(name = "baises", shape = [out_dim_bn3]) 
-        conv3 = conv2d(out2, w, b, stride = 1, padding = "VALID", is_training = is_training)
-        bn3 = batch_normalization(conv3)
+        conv3 = conv2d(out2, w, b, stride = 1, padding = "SAME")
+        bn3 = batch_normalization(conv3, is_training = is_training)
     out = inputs + bn3
     out = tf.nn.relu(out)
     
@@ -214,19 +214,19 @@ def resdual_v2(inputs, out_dim_bn1, out_dim_bn2, out_dim_bn3, is_training):
     """
     in_dim = inputs.get_shape().as_list()[-1]
     with tf.variable_scope("Branch_1"):
-        out1 = conv_bn_relu_layer(inputs, out_dim_bn1, kernel = 1, stride = 2, padding = "VALID",  is_training = is_training)
+        out1 = conv_bn_relu_layer(inputs, out_dim_bn1, kernel = 1, stride = 2, padding = "SAME",  is_training = is_training)
     with tf.variable_scope("Branch_2"):
         out2 = conv_bn_relu_layer(out1, out_dim_bn2, kernel = 3, stride = 1, , padding = "SAME", is_training = is_training)
     with tf.variable_scope("Branch_3"):
         w = create_conv_variables(name = "weights", shape = [1, 1, out_dim_bn2, out_dim_bn3])
         b = create_bias_variables(name = "baises", shape = [out_dim_bn3]) 
-        conv3 = conv2d(out2, w, b, stride = 1, padding = "VALID", is_training = is_training)
-        bn3 = batch_normalization(conv3)
+        conv3 = conv2d(out2, w, b, stride = 1, padding = "VALID")
+        bn3 = batch_normalization(conv3, is_training = is_training)
     with tf.variable_scope("Branch_4"):
         w = create_conv_variables(name = "weights", shape = [1, 1, in_dim, out_dim_bn3])
         b = create_bias_variables(name = "baises", shape = [out_dim_bn3]) 
-        conv4 = conv2d(inputs, w, b, stride = 2, padding = "VALID", is_training = is_training)
-        bn4 = batch_normalization(conv4)
+        conv4 = conv2d(inputs, w, b, stride = 2, padding = "VALID")
+        bn4 = batch_normalization(conv4, is_training = is_training)
     out = bn3 + bn4
     out = tf.nn.relu(out)
     
