@@ -15,7 +15,7 @@ class Resnet(object):
     def _buildModel(self):
         # inputs is 129x129x1
         with tf.variable_scope("conv0"):
-            conv0 = conv_bn_relu_layer(self.inputs, 8, 3, 1, padding = "VALID", self.is_training)
+            conv0 = conv_bn_relu_layer(self.inputs, 8, 3, 1, padding = "VALID", train_mode = self.is_training)
             activation_summary(conv0)
             
         # feature map is 127x127x8
