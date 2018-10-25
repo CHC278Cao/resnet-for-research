@@ -115,7 +115,7 @@ def batch_normalization(inputs, is_training, decay = 0.997, eps = 1e-5):
         inputs: 4-D tensor
         is_training: if training, the mean and avariance will update, otherwise, it won't update
     """
-    return tf.contrib.layers.batch_norm(inputs, decay = decay, epsilon = epsilon, is_training = is_training)
+    return tf.contrib.layers.batch_norm(inputs, decay = decay, epsilon = eps, is_training = is_training)
 
 def conv_bn_relu_layer(inputs, out_dim, kernel, stride, padding, is_training):
     """
