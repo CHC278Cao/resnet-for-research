@@ -30,22 +30,22 @@ class Resnet(object):
         
         # feature map is 64x64x16
         with tf.variable_scope("conv2"):
-            conv2 = resdual_v1(conv1, 16, 16, 32, self.is_training)
+            conv2 = resdual_v1(conv1, 8, 8, 16, self.is_training)
             activation_summary(conv2)
             
         # feature map is 64x64x32
         with tf.variable_scope("conv3"):
-            conv3 = resdual_v2(conv2, 16, 16, 32, self.is_training)
+            conv3 = resdual_v2(conv2, 8, 8, 32, self.is_training)
             activation_summary(conv3)
         
         # feature map is 32x32x32
         with tf.variable_scope("conv4"):
-            conv4 = resdual_v1(conv3, 32, 32, 64, self.is_training)
+            conv4 = resdual_v1(conv3, 16, 16, 32, self.is_training)
             activation_summary(conv4)
             
         # feature map is 32x32x64
         with tf.variable_scope("conv5"):
-            conv5 = resdual_v2(conv4, 32, 32, 64, self.is_training)
+            conv5 = resdual_v2(conv4, 16, 2, 64, self.is_training)
             activation_summary(conv5)
         
         # feature map is 16x16x64
