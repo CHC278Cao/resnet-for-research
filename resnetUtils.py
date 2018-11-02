@@ -6,31 +6,39 @@
 
 import numpy as np
 import tensorflow as tf
-
+WEIGHT_DECAY = 1e-5
 
     
-def create_conv_variables(name, shape, init = tf.contrib.layers.xavier_initializer()):
+def create_conv_variables(name, shape, weight_decay = True, init = tf.contrib.layers.xavier_initializer()):
     """
         generate the convolutional layer weights
     Args:
         name: variables name
         shape: weight tensor shape
+        weight_deacy: l2_regularizer, True by default
         init: weight initializd method, using xavier initializer by default
     """
-    regularizer = tf.contrib.layers.l2_regularizer(scale = FLAGS.weight_decay)
-    var = tf.get_variable(name, shape = shape, initializer = init, regularizer = regularizer)   
+    if weight_decay:
+        regularizer = tf.contrib.layers.l2_regularizer(scale = WEIGHT_DECAY)
+        var = tf.get_variable(name, shape = shape, initializer = init, regularizer = regularizer)
+    else:
+        var = tf.get_variable(name, shape = shape, initializer = init)
     return var
 
-def create_fc_variables(name, shape, init = tf.truncated_normal_initializer(0.0, stddev = 0.01)):
+def create_fc_variables(name, shape, weight_decay = True, init = tf.truncated_normal_initializer(0.0, stddev = 0.01)):
     """
         generate the fc Layer weights
     Args:
         name: variables name
         shape: weight tensor shape
+        weight_deacy: l2_regularizer, True by default
         init: weight initializd method, using truncated normal initializer by default
     """
-    regularizer = tf.contrib.layers.l2_regularizer(scale = FLAGS.weight_dacay)
-    var = tf.get_variable(name, shape = shape, initializer = init, regularizer = regularizer)
+    if weight_decay:
+        regularizer = tf.contrib.layers.l2_regularizer(scale = FLAGS.weight_dacay)
+        var = tf.get_variable(name, shape = shape, initializer = init, regularizer = regularizer)
+    else:
+        var = tf.get_variable(name, shape = shape, initializer = init)
     return var
 
 def create_bias_variables(name, shape, init = tf.constant_initializer(0.0)):
@@ -69,15 +77,15 @@ def pool2d(inputs, ksize, stride, padding = "SAME", active_func = tf.nn.max_pool
     """
     return active_func(inputs, ksize = [1, ksize, ksize, 1], strides = [1, stride, stride, 1], padding = padding)
 
-def output_layer(inputs, num_classes):
+def fc_layer(inputs, out_dim):
     """
         calculate the out of the model
         inputs: the fc Layer, 2-D tensor
-        num_classes: number of the classes
+        out_dim: the dimension for output
     """
     input_dim = inputs.get_shape().as_list()[-1]
-    fc_w = create_fc_variables(name = "fc_w", shape = [input_dim, num_classes])
-    fc_b = create_bias_variables(name = "fc_b", shape = [num_classes])
+    fc_w = create_fc_variables(name = "fc_w", shape = [input_dim, out_dim])
+    fc_b = create_bias_variables(name = "fc_b", shape = [out_dim])
     out = tf.nn.matmul(inputs, fc_w) + fc_b
     return out
 
