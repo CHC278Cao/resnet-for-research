@@ -5,6 +5,8 @@
 
 
 from resnetUtils import *
+import numpy as np
+import tensorflow as tf
 
 class Resnet(object):
     def __init__(self, inputs, num_classes, imgsize, is_training):
@@ -12,10 +14,10 @@ class Resnet(object):
         self.num_classes = num_classes
         self.is_training = is_training
         
-    def _buildModel(self):
+    def _buildModel(self, train_mode):
         # inputs is 129x129x1
         with tf.variable_scope("conv0"):
-            conv0 = conv_bn_relu_layer(self.inputs, 8, 3, 1, padding = "VALID", train_mode = self.is_training)
+            conv0 = conv_bn_relu_layer(self.inputs, 8, 3, 1, padding = "VALID", is_training = train_mode)
             activation_summary(conv0)
             
         # feature map is 127x127x8
