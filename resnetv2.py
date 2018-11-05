@@ -38,7 +38,7 @@ class Resnet(object):
             conv2 = resdual_v1(conv1, 16, 16, 16, train_mode)
             activation_summary(conv2)
 
-        # feature map is 64x64x32
+        # feature map is 64x64x16
         with tf.variable_scope("conv3"):
             conv3 = resdual_v2(conv2, 16, 16, 32, train_mode)
             activation_summary(conv3)
@@ -48,7 +48,7 @@ class Resnet(object):
             conv4 = resdual_v1(conv3, 16, 16, 32, train_mode)
             activation_summary(conv4)
 
-        # feature map is 32x32x64
+        # feature map is 32x32x32
         with tf.variable_scope("conv5"):
             conv5 = resdual_v2(conv4, 16, 16, 64, train_mode)
             activation_summary(conv5)
@@ -63,24 +63,24 @@ class Resnet(object):
             conv7 = resdual_v2(conv6, 32, 32, 64, train_mode)
             activation_summary(conv7)
 
-        # feature map is 16x16x64
+        # feature map is 8x8x64
         with tf.variable_scope("conv8"):
             conv8 = resdual_v1(conv7, 32, 32, 64, train_mode)
             activation_summary(conv8)
 
-        # feature map is 16x16x64
+        # feature map is 8x8x64
         with tf.variable_scope("conv9"):
             conv9 = resdual_v2(conv8, 32, 32, 64, train_mode)
             activation_summary(conv9)
 
-        # feature map is 8x8x64
+        # feature map is 4x4x64
         with tf.variable_scope("conv10"):
             w = create_conv_variables(name = "weights", shape = [1, 1, 64, 64])
             b = create_bias_variables(name = "biases", shape = [64])
             conv10 = conv2d(conv9, w, b, stride = 1 , padding = "SAME")
             activation_summary(conv10)
 
-        # feature map is 8x8x64
+        # feature map is 4x4x64
         shape = conv10.get_shape().as_list()
         flatten  = tf.reshape(conv10, shape = [-1, shape[1]*shape[2]*shape[3]])
 
